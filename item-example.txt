@@ -1,0 +1,16 @@
+Item Class: Body Armours
+Rarity: Rare
+Spirit Sanctuary
+Advanced Hexer's Robe
+--------
+Energy Shield: 156 (augmented)
+--------
+Requires: Level 48, 99 (unmet) Int
+--------
+Item Level: 51
+--------
++38 to maximum Energy Shield
+12% increased Energy Shield
++16% to Fire Resistance
++19% to Cold Resistance
+--------
