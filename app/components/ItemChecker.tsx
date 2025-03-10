@@ -213,7 +213,13 @@ export default function ItemChecker({ league }: ItemCheckerProps) {
       const data = await response.json();
 
       if (data.id) {
-        window.open(`https://www.pathofexile.com/trade2/search/${league}/${data.id}`, '_blank');
+        const tradeUrl = `https://www.pathofexile.com/trade/search/${league}/${data.id}`;
+        const a = document.createElement('a');
+        a.href = tradeUrl;
+        a.target = '_blank';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
       } else {
         throw new Error('No search ID returned');
       }
