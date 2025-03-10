@@ -19,10 +19,29 @@ export default function ItemChecker({ league }: ItemCheckerProps) {
   const contentEditableRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (contentEditableRef.current) {
-      contentEditableRef.current.focus();
-    }
+    // Define the paste event handler
+    const handlePaste = (e: ClipboardEvent) => {
+      e.preventDefault();
+      const text = e.clipboardData?.getData('text/plain');
+      if (text && contentEditableRef.current) {
+        const formatted = formatItemText(text);
+        contentEditableRef.current.innerHTML = formatted;
+        setItemText(text);
+        contentEditableRef.current.focus();
+      }
+    };
+
+    window.addEventListener('paste', handlePaste);
+    return () => {
+      window.removeEventListener('paste', handlePaste);
+    };
   }, []);
+
+  useEffect(() => {
+    if (itemText) {
+      handleSearch(); 
+    }
+  }, [itemText])
 
   useEffect(() => {
     const loadStats = async () => {
