@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { fetchStats, findStatId, extractValue } from '../utils/stats';
 import { ITEM_CLASS_MAP } from '../constants/itemTypes';
 import type { ParsedItem } from '../types/item';
@@ -16,6 +16,13 @@ export default function ItemChecker({ league }: ItemCheckerProps) {
   const [loading, setLoading] = useState(false);
   const [includeItemLevel, setIncludeItemLevel] = useState(false);
   const [isStatsLoaded, setIsStatsLoaded] = useState(false);
+  const contentEditableRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (contentEditableRef.current) {
+      contentEditableRef.current.focus();
+    }
+  }, []);
 
   useEffect(() => {
     const loadStats = async () => {
@@ -259,6 +266,7 @@ export default function ItemChecker({ league }: ItemCheckerProps) {
       <div className="relative group">
         <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-xl blur opacity-20 group-hover:opacity-30 transition duration-1000 group-hover:duration-200" />
         <div
+          ref={contentEditableRef}
           autoFocus
           contentEditable
           className="relative w-full h-64 p-4 rounded-xl bg-slate-900/90 border border-white/10
