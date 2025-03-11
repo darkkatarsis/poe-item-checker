@@ -19,6 +19,9 @@ export default function ItemChecker({ league }: ItemCheckerProps) {
   const contentEditableRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (contentEditableRef.current) {
+      contentEditableRef.current?.focus();
+    }
     // Define the paste event handler
     const handlePaste = (e: ClipboardEvent) => {
       e.preventDefault();
