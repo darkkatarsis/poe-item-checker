@@ -298,39 +298,8 @@ export default function ItemChecker({ league }: ItemCheckerProps) {
   //   }).join('');
   // };
 
-  const url = 'https://www.wp.pl';
-
-  const openInNewTabWindowOpen = () => {
-    window.open(url, '_blank');
-  };
-
-  const openInNewTabAnchor = () => {
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.target = '_blank';
-    anchor.rel = 'noopener noreferrer';
-    document.body.appendChild(anchor);
-    anchor.click();
-    document.body.removeChild(anchor);
-  };
-
-  const openInNewTabLocation = () => {
-    window.location.href = `javascript:window.open('${url}', '_blank')`;
-  };
-
   return (
     <div className="space-y-4 backdrop-blur-sm bg-white/5 rounded-2xl p-6 shadow-xl">
-      <div>
-      <button onClick={openInNewTabWindowOpen}>
-        Otwórz www.wp.pl (window.open)
-      </button>
-      <button onClick={openInNewTabAnchor}>
-        Otwórz www.wp.pl (Anchor Element)
-      </button>
-      <button onClick={openInNewTabLocation}>
-        Otwórz www.wp.pl (Location Hack)
-      </button>
-    </div>
       <div className="relative group">
         <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-xl blur opacity-20 group-hover:opacity-30 transition duration-1000 group-hover:duration-200" />
         <textarea
