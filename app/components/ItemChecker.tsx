@@ -19,6 +19,23 @@ export default function ItemChecker({ league }: ItemCheckerProps) {
   const contentEditableRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Function to check if the click was outside the contentEditableRef
+    const handleClickOutside = (event: MouseEvent) => {
+      if (contentEditableRef.current && !contentEditableRef.current.contains(event.target as Node)) {
+        contentEditableRef.current.focus();
+      }
+    };
+  
+    // Add event listener for clicks
+    document.addEventListener('mousedown', handleClickOutside);
+  
+    return () => {
+      // Remove event listener when the component is unmounted
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
     contentEditableRef.current?.focus();
 
     // Define the paste event handler
