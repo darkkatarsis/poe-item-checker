@@ -19,38 +19,23 @@ export default function ItemChecker({ league }: ItemCheckerProps) {
   const contentEditableRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // ... existing code ...
-  
-    // Autofocus on the contentEditable div
     contentEditableRef.current?.focus();
-  
-    // Handler for paste action
-    const handlePaste = (event) => {
-      if (contentEditableRef.current) {
-        navigator.clipboard.readText().then((text) => {
-          const formatted = formatItemText(text);
-          contentEditableRef.current.innerHTML = formatted;
-          setItemText(text);
-        }).catch((err) => {
-          console.error('Failed to read clipboard contents: ', err);
-        });
+
+    // Define the paste event handler
+    const handlePaste = (e: ClipboardEvent) => {
+      e.preventDefault();
+      const text = e.clipboardData?.getData('text/plain');
+      if (text && contentEditableRef.current) {
+        const formatted = formatItemText(text);
+        contentEditableRef.current.innerHTML = formatted;
+        setItemText(text);
+        contentEditableRef.current.focus();
       }
     };
-  
-    // Add event listener for paste action
-    window.addEventListener('keydown', (event) => {
-      if ((event.ctrlKey || event.metaKey) && event.key === 'v') {
-        handlePaste(event);
-      }
-    });
-  
-    // Cleanup event listener
+
+    window.addEventListener('paste', handlePaste);
     return () => {
-      window.removeEventListener('keydown', (event) => {
-        if ((event.ctrlKey || event.metaKey) && event.key === 'v') {
-          handlePaste(event);
-        }
-      });
+      window.removeEventListener('paste', handlePaste);
     };
   }, []);
 
@@ -58,7 +43,7 @@ export default function ItemChecker({ league }: ItemCheckerProps) {
     if (itemText) {
       handleSearch(); 
     }
-  }, [itemText])
+  }, [itemText]);
 
   useEffect(() => {
     const loadStats = async () => {
@@ -72,6 +57,13 @@ export default function ItemChecker({ league }: ItemCheckerProps) {
     };
     loadStats();
   }, []);
+
+  // Additional useEffect to focus the contentEditable element when stats are loaded
+  useEffect(() => {
+    if (isStatsLoaded) {
+      contentEditableRef.current?.focus();
+    }
+  }, [isStatsLoaded]);
 
   const parseItemText = (text: string): ParsedItem => {
     const lines = text.split('\n').map(line => line.trim()).filter(Boolean);
