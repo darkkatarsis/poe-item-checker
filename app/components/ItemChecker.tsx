@@ -16,49 +16,26 @@ export default function ItemChecker({ league }: ItemCheckerProps) {
   const [loading, setLoading] = useState(false);
   const [includeItemLevel, setIncludeItemLevel] = useState(false);
   const [isStatsLoaded, setIsStatsLoaded] = useState(false);
-  const contentEditableRef = useRef<HTMLDivElement>(null);
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    // Function to check if the click was outside the contentEditableRef
     const handleClickOutside = (event: MouseEvent) => {
-      if (contentEditableRef.current && !contentEditableRef.current.contains(event.target as Node)) {
-        contentEditableRef.current.focus();
+      if (textAreaRef.current && !textAreaRef.current.contains(event.target as Node)) {
+        event.preventDefault();
+        setTimeout(() => textAreaRef.current?.focus(), 0);
       }
     };
   
-    // Add event listener for clicks
     document.addEventListener('mousedown', handleClickOutside);
   
     return () => {
-      // Remove event listener when the component is unmounted
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
   useEffect(() => {
-    contentEditableRef.current?.focus();
-
-    // Define the paste event handler
-    const handlePaste = (e: ClipboardEvent) => {
-      e.preventDefault();
-      const text = e.clipboardData?.getData('text/plain');
-      if (text && contentEditableRef.current) {
-        const formatted = formatItemText(text);
-        contentEditableRef.current.innerHTML = formatted;
-        setItemText(text);
-        contentEditableRef.current.focus();
-      }
-    };
-
-    window.addEventListener('paste', handlePaste);
-    return () => {
-      window.removeEventListener('paste', handlePaste);
-    };
-  }, []);
-
-  useEffect(() => {
     if (itemText) {
-      handleSearch(); 
+      handleSearch();
     }
   }, [itemText]);
 
@@ -75,10 +52,9 @@ export default function ItemChecker({ league }: ItemCheckerProps) {
     loadStats();
   }, []);
 
-  // Additional useEffect to focus the contentEditable element when stats are loaded
   useEffect(() => {
     if (isStatsLoaded) {
-      contentEditableRef.current?.focus();
+      textAreaRef.current?.focus();
     }
   }, [isStatsLoaded]);
 
@@ -310,30 +286,19 @@ export default function ItemChecker({ league }: ItemCheckerProps) {
     <div className="space-y-4 backdrop-blur-sm bg-white/5 rounded-2xl p-6 shadow-xl">
       <div className="relative group">
         <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-xl blur opacity-20 group-hover:opacity-30 transition duration-1000 group-hover:duration-200" />
-        <div
-          ref={contentEditableRef}
-          autoFocus
-          contentEditable
-          className="relative w-full h-64 p-4 rounded-xl bg-slate-900/90 border border-white/10
-                     focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50
-                     text-white/90 font-mono text-sm overflow-auto whitespace-pre-wrap
-                     transition-all duration-200 focus:outline-none
-                     [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-white/10
-                     [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-white/5"
-          onPaste={(e) => {
-            e.preventDefault();
-            const text = e.clipboardData.getData('text');
-            const formatted = formatItemText(text);
-            e.currentTarget.innerHTML = formatted;
-            setItemText(text);
-          }}
-          onInput={(e) => {
-            const text = e.currentTarget.innerText;
-            setItemText(text);
-          }}
-          dangerouslySetInnerHTML={{ __html: itemText ? formatItemText(itemText) : '' }}
-          spellCheck={false}
-        />
+        <textarea
+        ref={textAreaRef}
+        autoFocus
+        value={itemText}
+        onChange={(e) => setItemText(e.target.value)}
+        className="relative w-full h-64 p-4 rounded-xl bg-slate-900/90 border border-white/10
+                   focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50
+                   text-white/90 font-mono text-sm overflow-auto whitespace-pre-wrap
+                   transition-all duration-200 focus:outline-none
+                   [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-white/10
+                   [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-white/5"
+        spellCheck={false}
+      />
       </div>
 
       {error && (
