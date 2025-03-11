@@ -37,6 +37,7 @@ export default function ItemChecker({ league }: ItemCheckerProps) {
     if (itemText) {
       handleSearch();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [itemText]);
 
   useEffect(() => {
@@ -253,34 +254,34 @@ export default function ItemChecker({ league }: ItemCheckerProps) {
     }
   };
 
-  const formatItemText = (text: string) => {
-    if (!text) return '';
+  // const formatItemText = (text: string) => {
+  //   if (!text) return '';
 
-    return text.split('\n').map((line, i) => {
-      if (line.includes('--------')) {
-        return `<div class="text-blue-400/50">--------</div>`;
-      }
-      if (line.startsWith('Item Class:')) {
-        return `<div class="text-cyan-400">${line}</div>`;
-      }
-      if (line.startsWith('Item Level:')) {
-        return `<div class="text-blue-400">${line}</div>`;
-      }
-      if (line.startsWith('Rarity:')) {
-        return `<div class="text-yellow-400">${line}</div>`;
-      }
-      if (line.match(/[0-9]+/)) {
-        return `<div class="text-cyan-300">${line}</div>`;
-      }
-      if (line.includes('Requires')) {
-        return `<div class="text-gray-400">${line}</div>`;
-      }
-      if (i <= 2 && line.trim() && !line.includes(':')) {
-        return `<div class="text-yellow-200 font-semibold">${line}</div>`;
-      }
-      return `<div class="text-white/90">${line}</div>`;
-    }).join('');
-  };
+  //   return text.split('\n').map((line, i) => {
+  //     if (line.includes('--------')) {
+  //       return `<div class="text-blue-400/50">--------</div>`;
+  //     }
+  //     if (line.startsWith('Item Class:')) {
+  //       return `<div class="text-cyan-400">${line}</div>`;
+  //     }
+  //     if (line.startsWith('Item Level:')) {
+  //       return `<div class="text-blue-400">${line}</div>`;
+  //     }
+  //     if (line.startsWith('Rarity:')) {
+  //       return `<div class="text-yellow-400">${line}</div>`;
+  //     }
+  //     if (line.match(/[0-9]+/)) {
+  //       return `<div class="text-cyan-300">${line}</div>`;
+  //     }
+  //     if (line.includes('Requires')) {
+  //       return `<div class="text-gray-400">${line}</div>`;
+  //     }
+  //     if (i <= 2 && line.trim() && !line.includes(':')) {
+  //       return `<div class="text-yellow-200 font-semibold">${line}</div>`;
+  //     }
+  //     return `<div class="text-white/90">${line}</div>`;
+  //   }).join('');
+  // };
 
   return (
     <div className="space-y-4 backdrop-blur-sm bg-white/5 rounded-2xl p-6 shadow-xl">
