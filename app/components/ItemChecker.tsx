@@ -19,6 +19,9 @@ export default function ItemChecker({ league }: ItemCheckerProps) {
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
+
+    textAreaRef.current?.focus();
+
     const handleClickOutside = (event: MouseEvent) => {
       if (textAreaRef.current && !textAreaRef.current.contains(event.target as Node)) {
         event.preventDefault();
