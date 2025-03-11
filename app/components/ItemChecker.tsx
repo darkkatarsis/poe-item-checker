@@ -19,24 +19,38 @@ export default function ItemChecker({ league }: ItemCheckerProps) {
   const contentEditableRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (contentEditableRef.current) {
-      contentEditableRef.current?.focus();
-    }
-    // Define the paste event handler
-    const handlePaste = (e: ClipboardEvent) => {
-      e.preventDefault();
-      const text = e.clipboardData?.getData('text/plain');
-      if (text && contentEditableRef.current) {
-        const formatted = formatItemText(text);
-        contentEditableRef.current.innerHTML = formatted;
-        setItemText(text);
-        contentEditableRef.current.focus();
+    // ... existing code ...
+  
+    // Autofocus on the contentEditable div
+    contentEditableRef.current?.focus();
+  
+    // Handler for paste action
+    const handlePaste = (event) => {
+      if (contentEditableRef.current) {
+        navigator.clipboard.readText().then((text) => {
+          const formatted = formatItemText(text);
+          contentEditableRef.current.innerHTML = formatted;
+          setItemText(text);
+        }).catch((err) => {
+          console.error('Failed to read clipboard contents: ', err);
+        });
       }
     };
-
-    window.addEventListener('paste', handlePaste);
+  
+    // Add event listener for paste action
+    window.addEventListener('keydown', (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === 'v') {
+        handlePaste(event);
+      }
+    });
+  
+    // Cleanup event listener
     return () => {
-      window.removeEventListener('paste', handlePaste);
+      window.removeEventListener('keydown', (event) => {
+        if ((event.ctrlKey || event.metaKey) && event.key === 'v') {
+          handlePaste(event);
+        }
+      });
     };
   }, []);
 
