@@ -19,9 +19,18 @@ export default function ItemChecker({ league }: ItemCheckerProps) {
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    setTimeout(() => {
+    const handleFocus = () => {
       textAreaRef.current?.focus();
-    }, 0);
+    };
+  
+
+    handleFocus();
+  
+    window.addEventListener('pageshow', handleFocus);
+  
+    return () => {
+      window.removeEventListener('pageshow', handleFocus);
+    };
   }, []);
 
   useEffect(() => {
