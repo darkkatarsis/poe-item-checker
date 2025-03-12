@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { fetchStats, findStatId, extractValue } from '../utils/stats';
 import { ITEM_CLASS_MAP } from '../constants/itemTypes';
 import type { ParsedItem } from '../types/item';
+import Cookies from 'js-cookie';
 
 interface ItemCheckerProps {
   league: string;
@@ -11,49 +12,44 @@ interface ItemCheckerProps {
 const RATE_LIMIT_DELAY = 1000;
 
 export default function ItemChecker({ league }: ItemCheckerProps) {
+  const [itemPaste, setItemPaste] = useState(false);
   const [itemText, setItemText] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [includeItemLevel, setIncludeItemLevel] = useState(false);
   const [isStatsLoaded, setIsStatsLoaded] = useState(false);
-  const textAreaRef = useRef<HTMLTextAreaElement>(null);
+  const contentEditableRef = useRef<HTMLDivElement>(null);
+  const [autoSearch, setAutoSearch] = useState(true);
 
   useEffect(() => {
-    const handleFocus = () => {
-      textAreaRef.current?.focus();
-    };
-  
-
-    handleFocus();
-  
-    window.addEventListener('pageshow', handleFocus);
-  
-    return () => {
-      window.removeEventListener('pageshow', handleFocus);
-    };
+    const cookieValue = Cookies.get('autoSearch');
+    // Only update state if cookieValue is different to avoid unnecessary re-renders
+    if (cookieValue !== undefined && cookieValue !== autoSearch.toString()) {
+      setAutoSearch(cookieValue === 'true');
+    }
   }, []);
 
   useEffect(() => {
+    // Set the cookie whenever autoSearch changes
+    Cookies.set('autoSearch', autoSearch.toString(), { expires: 365 });
+  }, [autoSearch]);
+
+  useEffect(() => {
+    // Function to check if the click was outside the contentEditableRef
     const handleClickOutside = (event: MouseEvent) => {
-      if (textAreaRef.current && !textAreaRef.current.contains(event.target as Node)) {
-        event.preventDefault();
-        setTimeout(() => textAreaRef.current?.focus(), 0);
+      if (contentEditableRef.current && !contentEditableRef.current.contains(event.target as Node)) {
+        contentEditableRef.current.focus();
       }
     };
-  
-    document.addEventListener('mousedown', handleClickOutside);
-  
+
+    // Add event listener for clicks
+    document.addEventListener('click', handleClickOutside);
+
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      // Remove event listener when the component is unmounted
+      document.removeEventListener('click', handleClickOutside);
     };
   }, []);
-
-  useEffect(() => {
-    if (itemText) {
-      handleSearch();
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [itemText]);
 
   useEffect(() => {
     const loadStats = async () => {
@@ -68,9 +64,10 @@ export default function ItemChecker({ league }: ItemCheckerProps) {
     loadStats();
   }, []);
 
+  // Additional useEffect to focus the contentEditable element when stats are loaded
   useEffect(() => {
     if (isStatsLoaded) {
-      textAreaRef.current?.focus();
+      contentEditableRef.current?.focus();
     }
   }, [isStatsLoaded]);
 
@@ -121,6 +118,9 @@ export default function ItemChecker({ league }: ItemCheckerProps) {
   };
 
   const handleSearch = async () => {
+
+    setItemPaste(false);
+
     if (!itemText.trim()) {
       setError('Please paste an item first');
       return;
@@ -269,52 +269,117 @@ export default function ItemChecker({ league }: ItemCheckerProps) {
     }
   };
 
-  // const formatItemText = (text: string) => {
-  //   if (!text) return '';
+  useEffect(() => {
+    if (itemPaste && autoSearch) {
+      handleSearch();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [itemPaste]);
 
-  //   return text.split('\n').map((line, i) => {
-  //     if (line.includes('--------')) {
-  //       return `<div class="text-blue-400/50">--------</div>`;
-  //     }
-  //     if (line.startsWith('Item Class:')) {
-  //       return `<div class="text-cyan-400">${line}</div>`;
-  //     }
-  //     if (line.startsWith('Item Level:')) {
-  //       return `<div class="text-blue-400">${line}</div>`;
-  //     }
-  //     if (line.startsWith('Rarity:')) {
-  //       return `<div class="text-yellow-400">${line}</div>`;
-  //     }
-  //     if (line.match(/[0-9]+/)) {
-  //       return `<div class="text-cyan-300">${line}</div>`;
-  //     }
-  //     if (line.includes('Requires')) {
-  //       return `<div class="text-gray-400">${line}</div>`;
-  //     }
-  //     if (i <= 2 && line.trim() && !line.includes(':')) {
-  //       return `<div class="text-yellow-200 font-semibold">${line}</div>`;
-  //     }
-  //     return `<div class="text-white/90">${line}</div>`;
-  //   }).join('');
-  // };
+  useEffect(() => {
+    const handlePaste = (event: ClipboardEvent) => {
+      event.preventDefault();
+      const text = event.clipboardData?.getData('text/plain');
+      if (text) {
+        setItemText(text); // Update the itemText with the pasted content
+        if (autoSearch) { handleSearch() };
+      }
+    };
+
+    // Attach the paste event listener to the textarea
+    const textArea = contentEditableRef.current;
+    textArea?.addEventListener('paste', handlePaste);
+
+    // Cleanup the event listener when the component is unmounted
+    return () => {
+      textArea?.removeEventListener('paste', handlePaste);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [handleSearch]);
+
+  const formatItemText = (text: string) => {
+    if (!text) return '';
+
+    return text.split('\n').map((line, i) => {
+      if (line.includes('--------')) {
+        return `<div class="text-blue-400/50">--------</div>`;
+      }
+      if (line.startsWith('Item Class:')) {
+        return `<div class="text-cyan-400">${line}</div>`;
+      }
+      if (line.startsWith('Item Level:')) {
+        return `<div class="text-blue-400">${line}</div>`;
+      }
+      if (line.startsWith('Rarity:')) {
+        return `<div class="text-yellow-400">${line}</div>`;
+      }
+      if (line.match(/[0-9]+/)) {
+        return `<div class="text-cyan-300">${line}</div>`;
+      }
+      if (line.includes('Requires')) {
+        return `<div class="text-gray-400">${line}</div>`;
+      }
+      if (i <= 2 && line.trim() && !line.includes(':')) {
+        return `<div class="text-yellow-200 font-semibold">${line}</div>`;
+      }
+      return `<div class="text-white/90">${line}</div>`;
+    }).join('');
+  };
 
   return (
     <div className="space-y-4 backdrop-blur-sm bg-white/5 rounded-2xl p-6 shadow-xl">
+      <div className="flex items-center justify-center gap-3 text-white/80">
+        <label htmlFor="autoSearch" className="text-sm select-none">
+          Auto search
+        </label>
+        <button
+          role="switch"
+          id="autoSearch"
+          aria-checked={autoSearch}
+          onClick={() => setAutoSearch(!autoSearch)}
+          className={`
+            relative inline-flex h-6 w-11 items-center rounded-full
+            transition-colors duration-200 ease-in-out
+            focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2
+            ${autoSearch ? 'bg-gradient-to-r from-blue-600 to-cyan-600' : 'bg-white/10'}
+          `}
+        >
+          <span
+            className={`
+              ${autoSearch ? 'translate-x-6' : 'translate-x-1'}
+              inline-block h-4 w-4 transform rounded-full
+              bg-white transition duration-200 ease-in-out
+            `}
+          />
+        </button>
+      </div>
       <div className="relative group">
         <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-xl blur opacity-20 group-hover:opacity-30 transition duration-1000 group-hover:duration-200" />
-        <textarea
-        ref={textAreaRef}
-        autoFocus
-        value={itemText}
-        onChange={(e) => setItemText(e.target.value)}
-        className="relative w-full h-64 p-4 rounded-xl bg-slate-900/90 border border-white/10
-                   focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50
-                   text-white/90 font-mono text-sm overflow-auto whitespace-pre-wrap
-                   transition-all duration-200 focus:outline-none
-                   [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-white/10
-                   [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-white/5"
-        spellCheck={false}
-      />
+        <div
+          ref={contentEditableRef}
+          autoFocus
+          contentEditable
+          className="relative w-full h-64 p-4 rounded-xl bg-slate-900/90 border border-white/10
+                     focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50
+                     text-white/90 font-mono text-sm overflow-auto whitespace-pre-wrap
+                     transition-all duration-200 focus:outline-none
+                     [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-white/10
+                     [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-white/5"
+          onPaste={(e) => {
+            e.preventDefault();
+            const text = e.clipboardData.getData('text');
+            const formatted = formatItemText(text);
+            e.currentTarget.innerHTML = formatted;
+            setItemText(text);
+            setItemPaste(true);
+          }}
+          onInput={(e) => {
+            const text = e.currentTarget.innerText;
+            setItemText(text);
+          }}
+          dangerouslySetInnerHTML={{ __html: itemText ? formatItemText(itemText) : '' }}
+          spellCheck={false}
+        />
       </div>
 
       {error && (
@@ -348,7 +413,6 @@ export default function ItemChecker({ league }: ItemCheckerProps) {
           />
         </button>
       </div>
-
       <button
         className="w-full py-4 px-6 bg-gradient-to-r from-blue-600 to-cyan-600
                    hover:from-blue-500 hover:to-cyan-500 rounded-xl text-white

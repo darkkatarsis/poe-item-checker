@@ -7,11 +7,8 @@ export const metadata: Metadata = {
   title: "PoE2 Item Checker | Fast Path of Exile Price Checking Tool",
   description: "Instantly check Path of Exile 2 item prices with our advanced item parser. Compare prices on the official trade site with just one paste. Free, fast, and accurate.",
   keywords: "Path of Exile 2, PoE2, item price checker, PoE trade, item pricing tool, Path of Exile trading",
-  authors: [{ name: "Pewpewlazer" }],
+  authors: [{ name: "Pewpewlazer" }, { name: "darkkatarsis" }],
   metadataBase: new URL('https://poe-item-check.vercel.app'),
-  other: {
-    'google-adsense-account': 'ca-pub-1887082899126861'
-  },
   openGraph: {
     title: "PoE2 Item Checker | Fast Path of Exile Price Checking Tool",
     description: "Instantly check Path of Exile 2 item prices with our advanced item parser. Free, fast, and accurate.",
@@ -25,11 +22,11 @@ export const metadata: Metadata = {
     description: "Instantly check Path of Exile 2 item prices with our advanced item parser. Free, fast, and accurate."
   },
   robots: {
-    index: true,
-    follow: true,
+    index: false,
+    follow: false,
     googleBot: {
-      index: true,
-      follow: true,
+      index: false,
+      follow: false,
       'max-image-preview': 'large'
     }
   }
