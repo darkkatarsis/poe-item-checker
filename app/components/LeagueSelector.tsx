@@ -1,4 +1,5 @@
 'use client';
+import { LEAGUES } from '../constants/leagues';
 
 interface LeagueSelectorProps {
   selectedLeague: string;
@@ -19,7 +20,11 @@ export default function LeagueSelector({ selectedLeague, onLeagueChange }: Leagu
                  focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50
                  transition-all duration-200"
       >
-        <option value="Standard">Standard</option>
+        {LEAGUES.map((league) => (
+          <option key={league.value} value={league.value}>
+            {league.label}
+          </option>
+        ))}
       </select>
     </div>
   );

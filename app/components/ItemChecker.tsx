@@ -4,6 +4,7 @@ import { fetchStats, findStatId, extractValue } from '../utils/stats';
 import { ITEM_CLASS_MAP } from '../constants/itemTypes';
 import type { ParsedItem } from '../types/item';
 import Cookies from 'js-cookie';
+import { LEAGUES } from '../constants/leagues';
 
 interface ItemCheckerProps {
   league: string;
@@ -257,7 +258,16 @@ export default function ItemChecker({ league }: ItemCheckerProps) {
       const data = await response.json();
 
       if (data.id) {
-        window.open(`https://www.pathofexile.com/trade2/search/${league}/${data.id}`, '_self');
+        // Find the league configuration
+        const leagueConfig = LEAGUES.find(l => l.value === league);
+        
+        if (leagueConfig?.urlPrefix) {
+          // Use special URL format with prefix for leagues like PoE2
+          window.open(`https://www.pathofexile.com/trade2/search/${leagueConfig.urlPrefix}/${league}/${data.id}`, '_self');
+        } else {
+          // Use standard URL format
+          window.open(`https://www.pathofexile.com/trade2/search/${league}/${data.id}`, '_self');
+        }
       } else {
         throw new Error('No search ID returned');
       }

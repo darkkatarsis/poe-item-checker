@@ -1,10 +1,30 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ItemChecker from '@/app/components/ItemChecker';
 import LeagueSelector from '@/app/components/LeagueSelector';
+import Cookies from 'js-cookie';
+import { LEAGUES } from '@/app/constants/leagues';
 
 export default function Home() {
-  const [selectedLeague, setSelectedLeague] = useState('Standard');
+  const [selectedLeague, setSelectedLeague] = useState<string>('Dawn of the Hunt');
+
+  // Load the selected league from cookies on component mount
+  useEffect(() => {
+    const savedLeague = Cookies.get('selectedLeague');
+    if (savedLeague) {
+      // Validate that the league exists in our list before setting it
+      const isValidLeague = LEAGUES.some(league => league.value === savedLeague);
+      if (isValidLeague) {
+        setSelectedLeague(savedLeague);
+      }
+    }
+  }, []);
+
+  // Save the selected league to cookies whenever it changes
+  const handleLeagueChange = (league: string) => {
+    setSelectedLeague(league);
+    Cookies.set('selectedLeague', league, { expires: 365 }); // Expires in 1 year
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-950 to-slate-900 p-8">
@@ -23,7 +43,7 @@ export default function Home() {
 
         <LeagueSelector
           selectedLeague={selectedLeague}
-          onLeagueChange={setSelectedLeague}
+          onLeagueChange={handleLeagueChange}
         />
 
         <ItemChecker league={selectedLeague} />
