@@ -36,19 +36,21 @@ export default function ItemChecker({ league }: ItemCheckerProps) {
   }, [autoSearch]);
 
   useEffect(() => {
-    // Function to check if the click was outside the contentEditableRef
-    const handleClickOutside = (event: MouseEvent) => {
-      if (contentEditableRef.current && !contentEditableRef.current.contains(event.target as Node)) {
+    // Only focus when user actually clicked on the contentEditable area
+    const handleTextBoxClick = (event: MouseEvent) => {
+      // Only focus the text area when clicked directly on it
+      if (contentEditableRef.current && contentEditableRef.current.contains(event.target as Node)) {
         contentEditableRef.current.focus();
       }
     };
 
-    // Add event listener for clicks
-    document.addEventListener('click', handleClickOutside);
+    // Add event listener for clicks on the text area only
+    const textArea = contentEditableRef.current;
+    textArea?.addEventListener('click', handleTextBoxClick);
 
     return () => {
       // Remove event listener when the component is unmounted
-      document.removeEventListener('click', handleClickOutside);
+      textArea?.removeEventListener('click', handleTextBoxClick);
     };
   }, []);
 
@@ -66,8 +68,9 @@ export default function ItemChecker({ league }: ItemCheckerProps) {
   }, []);
 
   // Additional useEffect to focus the contentEditable element when stats are loaded
+  // but only if no other element has focus (to prevent stealing focus)
   useEffect(() => {
-    if (isStatsLoaded) {
+    if (isStatsLoaded && document.activeElement === document.body) {
       contentEditableRef.current?.focus();
     }
   }, [isStatsLoaded]);
@@ -367,7 +370,6 @@ export default function ItemChecker({ league }: ItemCheckerProps) {
         <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-xl blur opacity-20 group-hover:opacity-30 transition duration-1000 group-hover:duration-200" />
         <div
           ref={contentEditableRef}
-          autoFocus
           contentEditable
           className="relative w-full h-64 p-4 rounded-xl bg-slate-900/90 border border-white/10
                      focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50
@@ -387,7 +389,7 @@ export default function ItemChecker({ league }: ItemCheckerProps) {
             const text = e.currentTarget.innerText;
             setItemText(text);
           }}
-          dangerouslySetInnerHTML={{ __html: itemText ? formatItemText(itemText) : '' }}
+          dangerouslySetInnerHTML={{ __html: itemText ? formatItemText(itemText) : '<div class="text-white/30">Click here and paste an item from the game (Ctrl+V)</div>' }}
           spellCheck={false}
         />
       </div>
